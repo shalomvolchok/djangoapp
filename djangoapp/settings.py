@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'x7!6gzk%4o!)06iivcxy9r0gampb4akxq3=%yf5q^k^*3)&+og'
+SECRET_KEY = '%5y#04#un#x%9e@lszouds&*1)0*@z-!k7v+sw7))@$p)$d2_s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -54,11 +54,11 @@ WSGI_APPLICATION = 'djangoapp.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
+PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(PROJECT_DIR, 'yourdatabasename.db'),
     }
 }
 
@@ -79,14 +79,4 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-
-
-
-# Static asset configuration
-import os
-STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
-
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
