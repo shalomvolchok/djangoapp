@@ -1,1 +1,1 @@
-web: gunicorn  djangoapp.wsgi -b 127.0.0.1:80
+web: gunicorn  djangoapp.wsgi -b 0.0.0.0:80
