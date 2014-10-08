@@ -114,7 +114,6 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
-AUTO_RENDER_SELECT2_STATICS = False
 ##
 #
 # Debug Toolbar
