@@ -97,7 +97,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 #Added from Heroku instructions
-STATIC_ROOT = 'staticfiles'
+STATIC_ROOT = BASE_DIR+'/staticfiles'
 STATIC_URL = '/static/'
 
 TEMPLATE_DIRS = (
