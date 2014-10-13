@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 import os
 from urlparse import urlparse, uses_netloc
+import sys
 
 ##
 #
@@ -26,7 +27,8 @@ def boolcheck(s):
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
-DEBUG = boolcheck(os.environ.get('DEBUG', False))
+DEBUG = boolcheck(os.environ.get('DEBUG', True))
+
 TEMPLATE_DEBUG = DEBUG
 DEBUG_TOOLBAR = boolcheck(os.environ.get('DEBUG_TOOLBAR', DEBUG))
 
@@ -116,9 +118,28 @@ TEMPLATE_LOADERS = (
 
 ##
 #
+# TESTING SETUP
+#
+##
+if DEBUG:
+    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+    NOSE_ARGS = [#'--nocapture',
+                 #'--nologcapture',
+                 #'--with-coverage',
+                 #'--cover-package=assembler',
+                 #'--cover-html',
+                 '--logging-level=DEBUG'
+                 ]
+
+else:
+    TEST_RUNNER = 'base.utils.fasttestrunner.FastTestRunner'
+
+##
+#
 # Debug Toolbar
 #
 ##
+
 def debug_toolbar_available():
     try:
         import debug_toolbar
@@ -126,19 +147,123 @@ def debug_toolbar_available():
     except ImportError:
         return False
 
-if DEBUG_TOOLBAR and debug_toolbar_available():
-    MIDDLEWARE_CLASSES.insert(0,'debug_toolbar.middleware.DebugToolbarMiddleware')
-    INSTALLED_APPS.append('debug_toolbar')
-    INTERNAL_IPS = (
-    '127.0.0.1',
-    )
-    JINGO_EXCLUDE_APPS.append('debug_toolbar')
-    CONFIG_DEFAULTS = {
-        # Toolbar options
-        'RESULTS_STORE_SIZE': 3,
-        'SHOW_COLLAPSED': True,
-        # Panel options
-        'INTERCEPT_REDIRECTS': False,
-        'SQL_WARNING_THRESHOLD': 100,   # milliseconds
+if len(sys.argv) > 1 and sys.argv[1] != 'test':
+    if DEBUG_TOOLBAR and debug_toolbar_available():
+        MIDDLEWARE_CLASSES.insert(0,'debug_toolbar.middleware.DebugToolbarMiddleware')
+        INSTALLED_APPS.append('debug_toolbar')
+        INTERNAL_IPS = (
+        '127.0.0.1',
+        )
+        JINGO_EXCLUDE_APPS.append('debug_toolbar')
+        CONFIG_DEFAULTS = {
+            # Toolbar options
+            'RESULTS_STORE_SIZE': 3,
+            'SHOW_COLLAPSED': True,
+            # Panel options
+            'INTERCEPT_REDIRECTS': False,
+            'SQL_WARNING_THRESHOLD': 100,   # milliseconds
+        }
+        DEBUG_TOOLBAR_PANELS = [
+               'debug_toolbar.panels.versions.VersionsPanel',
+               'debug_toolbar.panels.timer.TimerPanel',
+               'debug_toolbar.panels.settings.SettingsPanel',
+               'debug_toolbar.panels.headers.HeadersPanel',
+               'debug_toolbar.panels.request.RequestPanel',
+               #'debug_toolbar.panels.sql.SQLPanel',
+               'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+               'debug_toolbar.panels.templates.TemplatesPanel',
+               'debug_toolbar.panels.cache.CachePanel',
+               'debug_toolbar.panels.signals.SignalsPanel',
+               'debug_toolbar.panels.logging.LoggingPanel',
+               'debug_toolbar.panels.redirects.RedirectsPanel',
+           ]  
+
+##
+#
+# Logging settings
+#
+##
+else:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
+        'filters': {
+            'require_debug_false': {
+                '()': 'django.utils.log.RequireDebugFalse'
+            },
+            'require_debug_true': {
+                '()': 'django.utils.log.RequireDebugTrue',
+            }            
+        },
+        'handlers': {
+            'null': {
+                'class':'django.utils.log.NullHandler',
+                'level': 'DEBUG',            
+            },
+            'console':{
+                'level': 'INFO',
+                'filters': ['require_debug_true'],            
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            },      
+            'development_console': {
+                'level': 'DEBUG',
+                'filters': ['require_debug_true'],            
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            },                          
+            'development_logfile': {
+                'level': 'DEBUG',
+                'filters': ['require_debug_true'],
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR+'/logs/django.log',
+                'formatter': 'verbose'
+            },
+            'production_logfile': {
+                'level': 'ERROR',
+                'filters': ['require_debug_false'],
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR+'/logs/django_production.log',
+                'formatter': 'simple'
+            },
+            'production_dba_logfile': {
+                'level': 'ERROR',
+                'filters': ['require_debug_false'],
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR+'/logs/django_production_dba.log',
+                'formatter': 'simple'
+            },                                 
+        },
+        'root':{
+                'handlers': ['development_console'],
+                'level': 'DEBUG',
+        },
+        'loggers': {
+            '': {
+                'handlers': ['development_console','development_logfile','production_logfile'],
+                'level': 'DEBUG', 
+                'propagate': True,
+             },
+            'dba': {
+                'handlers': ['console','production_dba_logfile'],
+            },                      
+           'django.request': {
+                'handlers': ['development_logfile','production_logfile'],
+                'propagate': False,
+            },
+            'django': {
+                'handlers': ['null'],
+                'propagate': True,
+                'level': 'INFO',
+            },                
+        }
     }
 
