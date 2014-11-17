@@ -1,1 +1,2 @@
-web: gunicorn base.wsgi --log-file -
+web: gunicorn base.wsgi -p 0.0.0.0:$PORT $HAVELOG
+
